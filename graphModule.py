@@ -1,6 +1,6 @@
-import sys
 from collections import defaultdict
-max_int = 100
+import sys
+import uuid 
 
 class Driver():
     def __init__(self,name,pos,rating):
@@ -17,7 +17,10 @@ class Driver():
 # Add a client class and a journey class, store
 # each journey of the client
 class Client():
-    pass
+    def __init__(self,name,Id):
+        self.name = name
+        self.clientId = Id
+        self.journeys = []
 class Graph(): 
     
     # Graph initialization
@@ -118,37 +121,59 @@ class Uber():
     def __init__(self,graph):
         self.graph = graph
         self.journey = defaultdict(list)
-        self.clientInfo = defaultdict(Client)
-    def scheduleJourney(self,src,clientID): 
+        self.clientInfo = defaultdict(int)
+
+    def addClient(self):
+        pass
+
+    def scheduleJourney(self,src,dst,clientID): 
         closestDriverRes = self.graph.findClosestDriver(src)
 
         closestDriver = closestDriverRes[0]
         closestDriverIndex = closestDriverRes[1]
 
         if(closestDriver != None):
-            pass     
 
+            path = self.graph.generatePath(src,dst)
+            self.graph.driverInfo[closestDriverIndex].available = 0
+            
+            # store journey info
+            journeyId = uuid.uuid4()
+            self.journey[journeyId] = [self.clientInfo[clientID],closestDriver,path,0]
+            # zero indicates the trip has not been completed yet
+
+            # Add journeyId hash to the client object (Assuming client already present in the dictionary)
+            self.clientInfo[clientID].journeys.append(journeyId)
+            
+            return closestDriver.name
+
+        else:
+            return -1
         # Check if
 
-g = Graph(9) 
-g.graph = [ [0, 4, 0, 0, 0, 0, 0, 8, 0], 
-            [4, 0, 8, 0, 0, 0, 0, 11, 0], 
-            [0, 8, 0, 7, 0, 4, 0, 0, 2], 
-            [0, 0, 7, 0, 9, 14, 0, 0, 0], 
-            [0, 0, 0, 9, 0, 10, 0, 0, 0], 
-            [0, 0, 4, 14, 10, 0, 2, 0, 0], 
-            [0, 0, 0, 0, 0, 2, 0, 1, 6], 
-            [8, 11, 0, 0, 0, 0, 1, 0, 7], 
-            [0, 0, 2, 0, 0, 0, 6, 7, 0] 
-            ]; 
+# g = Graph(9) 
+# g.graph = [ [0, 4, 0, 0, 0, 0, 0, 8, 0], 
+#             [4, 0, 8, 0, 0, 0, 0, 11, 0], 
+#             [0, 8, 0, 7, 0, 4, 0, 0, 2], 
+#             [0, 0, 7, 0, 9, 14, 0, 0, 0], 
+#             [0, 0, 0, 9, 0, 10, 0, 0, 0], 
+#             [0, 0, 4, 14, 10, 0, 2, 0, 0], 
+#             [0, 0, 0, 0, 0, 2, 0, 1, 6], 
+#             [8, 11, 0, 0, 0, 0, 1, 0, 7], 
+#             [0, 0, 2, 0, 0, 0, 6, 7, 0] 
+#             ]; 
 
-print(g.generatePath(0,8))
+# print(g.generatePath(0,8))
 
-# drv1 = Driver("Ramesh",2,5)
-# drv2 = Driver("Suresh",7,5)
+# # drv1 = Driver("Ramesh",2,5)
+# # drv2 = Driver("Suresh",7,5)
 
-g.addDriver("Ramesh",2,5)
-g.addDriver("Suresh",7,5)
+# g.addDriver("Ramesh",2,5)
+# g.addDriver("Suresh",7,5)
 
-print((g.findClosestDriver(0))[0].name)
+# print((g.findClosestDriver(0))[0].name)
 # print(g.parentArray)
+
+a= defaultdict(Client)
+
+print(a[0]("ishar","menon"))

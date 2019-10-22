@@ -1,4 +1,5 @@
 import sys
+from collections import defaultdict
 max_int = 100
 
 class Driver():
@@ -6,15 +7,17 @@ class Driver():
         self.name = name
         self.position = pos
         self.rating = rating
+        self.available = 1
     def changePosition(self,pos):
         self.position = pos
     def getPositon(self):
         return self.position
     # Add function to update rating after each ride
 
-
-
-
+# Add a client class and a journey class, store
+# each journey of the client
+class Client():
+    pass
 class Graph(): 
     
     # Graph initialization
@@ -73,15 +76,20 @@ class Graph():
     def findClosestDriver(self,src):
         
         distanceArray = self.dijkstra(src)[0]
+
         print(distanceArray)
         minDist = 1e8
         closestDriver = None
+        driverIndex = -1
+        length = len(self.driverInfo)
 
-        for i in self.driverInfo:
-            if(distanceArray[i.position] < minDist):
-                minDist = distanceArray[i.position]
-                closestDriver = i
-        return closestDriver
+        for i in range(length):
+            if(distanceArray[self.driverInfo[i].position] < minDist and (self.driverInfo[i].available == 1) ):
+                minDist = distanceArray[self.driverInfo[i].position]
+                closestDriver = self.driverInfo[i]
+                driverIndex = i
+
+        return (closestDriver,driverIndex)
 
     def generatePath(self,src,dst):
 
@@ -106,9 +114,21 @@ class Graph():
 
         return path[::-1]
             
+class Uber():
+    def __init__(self,graph):
+        self.graph = graph
+        self.journey = defaultdict(list)
+        self.clientInfo = defaultdict(Client)
+    def scheduleJourney(self,src,clientID): 
+        closestDriverRes = self.graph.findClosestDriver(src)
 
-        
-        
+        closestDriver = closestDriverRes[0]
+        closestDriverIndex = closestDriverRes[1]
+
+        if(closestDriver != None):
+            pass     
+
+        # Check if
 
 g = Graph(9) 
 g.graph = [ [0, 4, 0, 0, 0, 0, 0, 8, 0], 
@@ -123,4 +143,12 @@ g.graph = [ [0, 4, 0, 0, 0, 0, 0, 8, 0],
             ]; 
 
 print(g.generatePath(0,8))
+
+# drv1 = Driver("Ramesh",2,5)
+# drv2 = Driver("Suresh",7,5)
+
+g.addDriver("Ramesh",2,5)
+g.addDriver("Suresh",7,5)
+
+print((g.findClosestDriver(0))[0].name)
 # print(g.parentArray)

@@ -14,8 +14,7 @@ class Driver():
         return self.position
     # Add function to update rating after each ride
 
-# Add a client class and a journey class, store
-# each journey of the client
+
 class Client():
     def __init__(self,name,Id):
         self.name = name
@@ -122,11 +121,12 @@ class Uber():
         self.graph = graph
         self.journey = defaultdict(list)
         self.clientInfo = defaultdict(int)
+        self.activeJourneys = dict()
+ 
+    def addClient(self,newClient,clientID):
+        self.clientInfo[clientID] = newClient
 
-    def addClient(self):
-        pass
-
-    def scheduleJourney(self,src,dst,clientID): 
+    def scheduleAndStartJourney(self,src,dst,clientID): 
         closestDriverRes = self.graph.findClosestDriver(src)
 
         closestDriver = closestDriverRes[0]
@@ -139,8 +139,11 @@ class Uber():
             
             # store journey info
             journeyId = uuid.uuid4()
-            self.journey[journeyId] = [self.clientInfo[clientID],closestDriver,path,0]
+            self.journey[journeyId] = [self.clientInfo[clientID],closestDriverIndex,path,0]
             # zero indicates the trip has not been completed yet
+
+            # Add to Active journey list
+            self.activeJourneys[journeyId] = [self.clientInfo[clientID],closestDriverIndex,path]
 
             # Add journeyId hash to the client object (Assuming client already present in the dictionary)
             self.clientInfo[clientID].journeys.append(journeyId)
@@ -150,30 +153,58 @@ class Uber():
         else:
             return -1
         # Check if
+    def endJourney(self,clientID):
+        # Get the journeyId 
+        jorneyId = self.clientInfo[clientID].journeys[-1]
 
-# g = Graph(9) 
-# g.graph = [ [0, 4, 0, 0, 0, 0, 0, 8, 0], 
-#             [4, 0, 8, 0, 0, 0, 0, 11, 0], 
-#             [0, 8, 0, 7, 0, 4, 0, 0, 2], 
-#             [0, 0, 7, 0, 9, 14, 0, 0, 0], 
-#             [0, 0, 0, 9, 0, 10, 0, 0, 0], 
-#             [0, 0, 4, 14, 10, 0, 2, 0, 0], 
-#             [0, 0, 0, 0, 0, 2, 0, 1, 6], 
-#             [8, 11, 0, 0, 0, 0, 1, 0, 7], 
-#             [0, 0, 2, 0, 0, 0, 6, 7, 0] 
-#             ]; 
+        # Remove from Active journeys and make inactive in journeys
+        self.activeJourneys.pop(journeyId,None)
+        self.journey[journeyId][3] = 1
+
+        #Make driver available again with updated position
+        self.graph.driverInfo[closestDriverIndex].available = 1
+        self.graph.driverInfo[closestDriverIndex].position = self.journey[journeyId][2][-1]
+
+    def pool(self,src,dst,clientID):
+        # Find the closest driver who is in the middle of a trip
+        # check if it is feasible to add new client to the trip 
+        # if it is pickup the client and crate the new path 
+        pass
+
+        
+
+g = Graph(9) 
+g.graph = [ [0, 4, 0, 0, 0, 0, 0, 8, 0], 
+            [4, 0, 8, 0, 0, 0, 0, 11, 0], 
+            [0, 8, 0, 7, 0, 4, 0, 0, 2], 
+            [0, 0, 7, 0, 9, 14, 0, 0, 0], 
+            [0, 0, 0, 9, 0, 10, 0, 0, 0], 
+            [0, 0, 4, 14, 10, 0, 2, 0, 0], 
+            [0, 0, 0, 0, 0, 2, 0, 1, 6], 
+            [8, 11, 0, 0, 0, 0, 1, 0, 7], 
+            [0, 0, 2, 0, 0, 0, 6, 7, 0] 
+            ]; 
 
 # print(g.generatePath(0,8))
 
 # # drv1 = Driver("Ramesh",2,5)
 # # drv2 = Driver("Suresh",7,5)
 
-# g.addDriver("Ramesh",2,5)
-# g.addDriver("Suresh",7,5)
+g.addDriver("Ramesh",2,5)
+g.addDriver("Suresh",7,5)
+
+cli1 = Client("Ishar",1)
+cli2 = Client("Menon",2) 
+
+myUber = Uber(g)
+myUber.addClient(cli1,cli1.clientId)
+myUber.addClient(cli2,cli2.clientId)
+
+
+print(myUber.scheduleAndStartJourney(0,8,1))
+print(myUber.journey)
+print(myUber.clientInfo)
 
 # print((g.findClosestDriver(0))[0].name)
 # print(g.parentArray)
 
-a= defaultdict(Client)
-
-print(a[0]("ishar","menon"))

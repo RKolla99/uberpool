@@ -131,7 +131,7 @@ class Uber():
 
         closestDriver = closestDriverRes[0]
         closestDriverIndex = closestDriverRes[1]
-
+        print("This is the closest driver index",closestDriverIndex)
         if(closestDriver != None):
 
             path = self.graph.generatePath(src,dst)
@@ -155,15 +155,29 @@ class Uber():
         # Check if
     def endJourney(self,clientID):
         # Get the journeyId 
-        jorneyId = self.clientInfo[clientID].journeys[-1]
+        journeyId = self.clientInfo[clientID].journeys[-1]
 
         # Remove from Active journeys and make inactive in journeys
         self.activeJourneys.pop(journeyId,None)
         self.journey[journeyId][3] = 1
 
+        closestDriverIndex = self.journey[journeyId][1]
+        # print(closestDriverIndex)
+
         #Make driver available again with updated position
         self.graph.driverInfo[closestDriverIndex].available = 1
         self.graph.driverInfo[closestDriverIndex].position = self.journey[journeyId][2][-1]
+
+    def cancelBooking(self,clientID):
+        journeyId = self.clientInfo[clientID].journeys[-1]
+        self.clientInfo[clientID].journeys.pop()
+        self.activeJourneys.pop(journeyId,None)
+
+        closestDriverIndex = self.journey[journeyId][1]
+        # print(closestDriverIndex)
+
+        #Make driver available 
+        self.graph.driverInfo[closestDriverIndex].available = 1
 
     def pool(self,src,dst,clientID):
         # Find the closest driver who is in the middle of a trip
@@ -173,37 +187,37 @@ class Uber():
 
         
 
-g = Graph(9) 
-g.graph = [ [0, 4, 0, 0, 0, 0, 0, 8, 0], 
-            [4, 0, 8, 0, 0, 0, 0, 11, 0], 
-            [0, 8, 0, 7, 0, 4, 0, 0, 2], 
-            [0, 0, 7, 0, 9, 14, 0, 0, 0], 
-            [0, 0, 0, 9, 0, 10, 0, 0, 0], 
-            [0, 0, 4, 14, 10, 0, 2, 0, 0], 
-            [0, 0, 0, 0, 0, 2, 0, 1, 6], 
-            [8, 11, 0, 0, 0, 0, 1, 0, 7], 
-            [0, 0, 2, 0, 0, 0, 6, 7, 0] 
-            ]; 
+
 
 # print(g.generatePath(0,8))
 
 # # drv1 = Driver("Ramesh",2,5)
 # # drv2 = Driver("Suresh",7,5)
 
-g.addDriver("Ramesh",2,5)
-g.addDriver("Suresh",7,5)
-
-cli1 = Client("Ishar",1)
-cli2 = Client("Menon",2) 
-
-myUber = Uber(g)
-myUber.addClient(cli1,cli1.clientId)
-myUber.addClient(cli2,cli2.clientId)
 
 
-print(myUber.scheduleAndStartJourney(0,8,1))
-print(myUber.journey)
-print(myUber.clientInfo)
+# g.addDriver("Ramesh",2,5)
+# g.addDriver("Suresh",7,5)
+
+# cli1 = Client("Ishar",1)
+# cli2 = Client("Menon",2) 
+
+# myUber = Uber(g)
+# myUber.addClient(cli1,cli1.clientId)
+# myUber.addClient(cli2,cli2.clientId)
+
+
+# print(myUber.scheduleAndStartJourney(0,8,1))
+# print(myUber.journey)
+# print(myUber.activeJourneys)
+# print(myUber.clientInfo)
+
+# myUber.endJourney(1)
+# print(myUber.activeJourneys)
+# print(myUber.graph.driverInfo[1].position)
+
+
+
 
 # print((g.findClosestDriver(0))[0].name)
 # print(g.parentArray)

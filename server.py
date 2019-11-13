@@ -1,5 +1,33 @@
 import socket
 import select
+from graphModule import *
+
+# Graph setup
+
+g = Graph(9) 
+g.graph = [ [0, 4, 0, 0, 0, 0, 0, 8, 0], 
+            [4, 0, 8, 0, 0, 0, 0, 11, 0], 
+            [0, 8, 0, 7, 0, 4, 0, 0, 2], 
+            [0, 0, 7, 0, 9, 14, 0, 0, 0], 
+            [0, 0, 0, 9, 0, 10, 0, 0, 0], 
+            [0, 0, 4, 14, 10, 0, 2, 0, 0], 
+            [0, 0, 0, 0, 0, 2, 0, 1, 6], 
+            [8, 11, 0, 0, 0, 0, 1, 0, 7], 
+            [0, 0, 2, 0, 0, 0, 6, 7, 0] 
+            ]; 
+
+# Initial user and driver setup
+g.addDriver("Ramesh",2,5)
+g.addDriver("Suresh",7,5)
+
+cli1 = Client("Ishar",1)
+cli2 = Client("Menon",2) 
+
+myUber = Uber(g)
+myUber.addClient(cli1,cli1.clientId)
+myUber.addClient(cli2,cli2.clientId)
+
+
 
 HEADER_LENGTH = 10
 IP = "127.0.0.1"
@@ -48,7 +76,7 @@ while True:
             clients[client_socket] = user
 
             print(f"Accepted new connection from {client_address[0]} : {client_address[1]} username : {user['data'].decode('utf-8')}")
-        
+            # print("new connection made")
         # accept message if tcp connection already made and recieve the message and broadcast to all other users
         else:
 
@@ -64,10 +92,35 @@ while True:
 
             print(f"Recieved message from {user['data'].decode('utf-8')} : {message['data'].decode('utf-8')}")
 
+            dataRecieved = list(map(int,(message['data'].decode('utf-8')).split(",")))
+
+            print(dataRecieved)
+
+            # Client waiting for the driver, look for nearest driver and send request to driver 
+            if(dataRecieved[0] == 1):
+                myUber.scheduleAndStartJourney(dataRecieved[2],dataRecieved[3],dataRecieved[1])
+
+            # Driver has accepted the request
+            elif(dataRecieved[0] == 3):
+                clientID = dataRecieved[1]
+                journeyId = myUber.clientInfo[clientID].journeys[-1]
+                DriverIndex = myUber.journey[journeyId][1]
+                DriverName = myUber.graph.driverInfo[DriverIndex].name
+                responseMessage = "1"+","+DriverName
+                message['data'] = (responseMessage).encode("utf-8")
+                message['header'] = f"{len(responseMessage) :< {HEADER_LENGTH}}".encode("utf-8")
+            # Driver has rejected the request
+            elif(dataRecieved[0] == 4):
+                myUber.cancelBooking(dataRecieved[1])
+                responseMessage = "0"+","+"No Driver available"
+                message['data'] = (responseMessage).encode("utf-8")
+                message['header'] = f"{len(responseMessage) :< {HEADER_LENGTH}}".encode("utf-8")
+            print(message['data'])
+            print(user['header'] + user['data'] + message['header'] + message['data'])
             for client_socket in clients:
                 if(client_socket  != notified_socket):
                     client_socket.send(user['header'] + user['data'] + message['header'] + message['data'])
-
+                    
     
     for notified_socket in exception_sokcets:
         sockets_list.remove(notified_socket)

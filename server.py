@@ -99,7 +99,10 @@ while True:
             # Client waiting for the driver, look for nearest driver and send request to driver 
             if(dataRecieved[0] == 1):
                 myUber.scheduleAndStartJourney(dataRecieved[2],dataRecieved[3],dataRecieved[1])
-
+            
+            # Client ends the journey
+            elif(dataRecieved[0] == 2): 
+                myUber.endJourney(dataRecieved[1])
             # Driver has accepted the request
             elif(dataRecieved[0] == 3):
                 clientID = dataRecieved[1]

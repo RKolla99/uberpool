@@ -23,7 +23,7 @@ client_socket.send(username_header + username)
 sendMessageActive = 0
 getMessageActive = 0
 
-clientStates = ['welcome','DriverorClient','Location input',"clientWait",'MakeDriverAvailable','DriverResponse','Confirm']
+clientStates = ['welcome','DriverorClient','Location input',"clientWait",'MakeDriverAvailable','DriverResponse','Confirm','EndJounrey','journeyEndDriver']
 
 currentState = 'welcome'
 
@@ -60,9 +60,11 @@ def getMessage():
             elif(currentState=="clientWait"):
                 if(dataRecieved[0] == "1"):
                     print(f"{dataRecieved[1]} will pick you up shortly")
+                    currentState = "EndJounrey"                    
                 else:
                     print("No driver available , please try again later")
-
+            elif(currentState=="journeyEndDriver"):
+                print("The journey has been completed")
     except IOError as e:
         # If there is nothing left to read then just continue
         if(e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK):
@@ -112,7 +114,14 @@ def sendMessage():
         message = message.encode("utf-8")
         message_header = f"{len(message) :< {HEADER_LENGTH}}".encode("utf-8")
         client_socket.send(message_header + message)
-        
+        currentState = "journeyEndDriver"
+    elif(currentState == "EndJounrey"):
+        print("Enter 1 to end the journey")
+        choice = int(input())
+        message = "2"+","+"1"
+        message = message.encode("utf-8")
+        message_header = f"{len(message) :< {HEADER_LENGTH}}".encode("utf-8")
+        client_socket.send(message_header + message)
     # else:
     #     message = input(f"{my_username} > ")
 
